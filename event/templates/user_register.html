@@ -1,0 +1,81 @@
+{% extends "user_base.html" %}
+
+{% block title %}Register Event{% endblock %}
+
+{% block content %}
+
+<div class="register-container">
+
+<h1>Event Registration</h1>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="form-group">
+
+<label>Event</label>
+
+<input type="text"
+value="{{ event.event_name }}"
+readonly>
+
+</div>
+
+<div class="form-group">
+
+<label>Name</label>
+
+<input
+type="text"
+name="name"
+required>
+
+</div>
+
+<div class="form-group">
+
+<label>Email</label>
+
+<input
+type="email"
+name="email"
+required>
+
+</div>
+
+<div class="form-group">
+
+<label>Phone</label>
+
+<input
+type="text"
+name="phone"
+required>
+
+</div>
+
+<div class="form-group">
+
+<label>College</label>
+
+<input
+type="text"
+name="college"
+required>
+
+</div>
+
+<button
+type="submit"
+class="register-btn">
+
+Register Now
+
+</button>
+
+</form>
+
+</div>
+
+{% endblock %}

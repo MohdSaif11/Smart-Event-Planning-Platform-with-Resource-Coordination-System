@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Event Wish List{% endblock %}
+
+{% block content %}
+
+<div class="list-page">
+
+    <div class="page-heading">
+        <h1>Event Wish List</h1>
+
+        <div class="breadcrumb">
+            <a href="{% url 'home' %}">Home</a> / Event Wish List
+        </div>
+    </div>
+
+    <div class="content-card">
+
+        <div class="content-card-header">
+
+            <h2>Wish List</h2>
+
+            <a href="{% url 'add_event_wish_user' %}" class="primary-btn">
+                Add Event Wish User
+            </a>
+
+        </div>
+
+        <div class="data-table-wrapper">
+
+            <table class="data-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Event</th>
+                        <th>Category</th>
+                        <th>Venue</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for wish in wishes %}
+
+                    <tr>
+                        <td>{{ wish.id }}</td>
+
+                        <td>{{ wish.name }}</td>
+
+                        <td>{{ wish.email }}</td>
+
+                        <td>{{ wish.event.event_name }}</td>
+
+                        <td>{{ wish.event.category }}</td>
+
+                        <td>{{ wish.event.venue }}</td>
+
+                        <td>
+                            <a
+                                href="{% url 'delete_event_wish' wish.id %}"
+                                class="delete-btn"
+                                onclick="return confirm('Are you sure you want to remove this event from the wish list?');"
+                            >
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="7" class="empty-row">
+                            No Events Found In Wish List
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

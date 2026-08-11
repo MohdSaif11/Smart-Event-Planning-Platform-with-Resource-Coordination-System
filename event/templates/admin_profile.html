@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Profile{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <h1>Admin Profile</h1>
+</div>
+
+<div class="profile-card">
+
+    <div class="profile-image-section">
+
+        {% if profile.profile_image %}
+        <img src="{{ profile.profile_image.url }}" class="profile-picture">
+        {% else %}
+        <div class="profile-avatar">
+            {{ request.user.first_name|first|upper }}
+        </div>
+        {% endif %}
+
+    </div>
+
+    <div class="profile-details">
+
+        <h2>{{ user.first_name }}</h2>
+
+        <p><strong>Email :</strong> {{ user.email }}</p>
+
+        <p><strong>Phone :</strong> {{ profile.phone }}</p>
+
+        <p><strong>College :</strong> {{ profile.college }}</p>
+
+        <p><strong>Role :</strong> Administrator</p>
+
+    </div>
+
+</div>
+
+{% endblock %}

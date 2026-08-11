@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <h1>Dashboard</h1>
+
+    <div class="breadcrumbs">
+        <a href="{% url 'admin_panel' %}">Home</a>
+        /
+        <span>Dashboard</span>
+    </div>
+</div>
+
+<div class="dashboard-cards">
+
+    <div class="dashboard-card purple">
+        <i class="fas fa-list"></i>
+        <h2>{{ categories_count }}</h2>
+        <p>Event Categories</p>
+        <a href="{% url 'category_list' %}">View Details</a>
+    </div>
+
+    <div class="dashboard-card teal">
+        <i class="fas fa-calendar-days"></i>
+        <h2>{{ events_count }}</h2>
+        <p>Total Events</p>
+        <a href="{% url 'event_list' %}">View Details</a>
+    </div>
+
+    <div class="dashboard-card orange">
+        <i class="fas fa-users"></i>
+        <h2>{{ members_count }}</h2>
+        <p>Registrations</p>
+        <a href="{% url 'join_event_list' %}">View Details</a>
+    </div>
+    <div class="dashboard-card pink">
+        <i class="fas fa-circle-check"></i>
+        <h2>{{ completed_events_count }}</h2>
+        <p>Completed Events</p>
+        <a href="{% url 'complete_event_list' %}">View Details</a>
+    </div>
+    <div class="dashboard-card blue">
+        <i class="fas fa-location-dot"></i>
+        <h2>{{ venue_count }}</h2>
+        <p>Event Venues</p>
+        <a href="{% url 'event_list' %}">View Details</a>
+    </div>
+
+    <div class="dashboard-card dark">
+        <i class="fas fa-user-tie"></i>
+        <h2>0</h2>
+        <p>Organizers</p>
+        <a href="#">View Details</a>
+    </div>
+
+</div>
+
+<div class="chart-card">
+
+    <div class="dashboard-table-header">
+        <h2>Event Registration Analytics</h2>
+    </div>
+
+    <canvas id="eventChart"></canvas>
+
+</div>
+
+<div class="dashboard-table-box">
+
+    <div class="dashboard-table-header">
+        <h2>Recent Events</h2>
+
+        <a href="{% url 'create_event' %}" class="green-btn">
+            Create Event
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Event</th>
+                    <th>Category</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Venue</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for event in events %}
+
+                <tr>
+                    <td>{{ event.id }}</td>
+                    <td>{{ event.event_name }}</td>
+                    <td>{{ event.category }}</td>
+                    <td>{{ event.start_date }}</td>
+                    <td>{{ event.end_date }}</td>
+                    <td>{{ event.venue }}</td>
+                    <td>
+                        {% now "Y-m-d" as today %}
+
+                        {% if event.end_date|date:"Y-m-d" < today %} <span class="status completed">Completed</span>
+
+                            {% elif event.start_date|date:"Y-m-d" > today %}
+                            <span class="status upcoming">Upcoming</span>
+
+                            {% else %}
+                            <span class="status active">Active</span>
+                            {% endif %}
+                    </td>
+
+                    <td>
+                        <a href="{% url 'edit_event' event.id %}" class="edit-btn">
+                            Edit
+                        </a>
+                        <a href="{% url 'event_qr' event.id %}"
+   class="qr-btn"
+   target="_blank">
+    Event QR
+</a>
+                    </td>
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="7" class="empty-message">
+                        No Events Available
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const ctx = document.getElementById("eventChart");
+
+new Chart(ctx,{
+
+    type:"bar",
+
+    data:{
+
+        labels:{{ event_names|safe }},
+
+        datasets:[{
+
+            label:"Registrations",
+
+            data:{{ registration_counts|safe }},
+
+            backgroundColor:[
+                "#6C63FF",
+                "#14B8A6",
+                "#FB923C",
+                "#EC4899",
+                "#2563EB",
+                "#10B981",
+                "#F97316",
+                "#8B5CF6"
+            ],
+
+            borderRadius:8
+
+        }]
+
+    },
+
+    options:{
+
+        responsive:true,
+
+        plugins:{
+
+            legend:{
+                display:false
+            }
+
+        },
+
+        scales:{
+
+            y:{
+
+                beginAtZero:true,
+
+                ticks:{
+                    stepSize:1
+                }
+
+            }
+
+        }
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

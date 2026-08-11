@@ -1,0 +1,210 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}User Panel{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/admin_panel.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/user.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <div class="container">
+
+        <aside class="sidebar">
+
+            <div class="sidebar-header">
+                <h2>User Panel</h2>
+            </div>
+
+            <div class="user-profile">
+
+                {% if request.user.userprofile.profile_image %}
+                <img src="{{ request.user.userprofile.profile_image.url }}" class="user-sidebar-profile-image"
+                    alt="User Profile">
+                {% else %}
+                <img src="{% static 'images/profile.jpeg' %}" class="user-sidebar-profile-image" alt="User Profile">
+                {% endif %}
+
+                <span class="user-sidebar-name">
+                    Welcome {{ request.user.first_name }}
+                </span>
+
+            </div>
+
+            <nav class="sidebar-menu">
+
+                <ul class="main-menu">
+
+                    <li>
+                        <a href="{% url 'user_dashboard' %}">
+                            <i class="fa-solid fa-gauge"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-dropdown">
+
+                        <button type="button" class="sidebar-dropdown-button" id="eventsDropdownButton">
+
+                            <span class="dropdown-title">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                <span>Events</span>
+                            </span>
+
+                            <i class="fa-solid fa-chevron-right dropdown-chevron" id="eventsDropdownArrow"></i>
+
+                        </button>
+
+                        <ul class="sidebar-submenu" id="eventsDropdownMenu">
+
+                            <li>
+                                <a href="{% url 'user_event_list' %}">
+                                    <i class="fa-solid fa-list"></i>
+                                    <span>View Events</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{% url 'my_registrations' %}">
+                                    <i class="fa-solid fa-user-check"></i>
+                                    <span>My Registrations</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{% url 'wishlist' %}">
+                                    <i class="fa-solid fa-heart"></i>
+                                    <span>Wishlist</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{% url 'completed_events' %}">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    <span>Completed Events</span>
+                                </a>
+                            </li>
+
+                        </ul>
+
+                    </li>
+
+                    <li>
+                        <a href="{% url 'profile' %}">
+                            <i class="fa-solid fa-user"></i>
+                            <span>My Profile</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{% url 'login' %}">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            <span>Logout</span>
+                        </a>
+                    </li>
+
+                </ul>
+
+            </nav>
+
+        </aside>
+
+        <div class="main-content">
+
+            <header class="navbar">
+
+                <div class="nav-left">
+
+                    <button class="menu-toggle" id="menuToggle" type="button">
+
+                        <i class="fa-solid fa-bars"></i>
+
+                    </button>
+
+                    <a href="{% url 'user_dashboard' %}">
+                        Home
+                    </a>
+
+                    <a href="#">
+                        Contact
+                    </a>
+
+                </div>
+
+            </header>
+
+            <main class="content-body">
+
+                {% block content %}
+                {% endblock %}
+
+            </main>
+
+            <footer class="admin-footer">
+
+                <div class="footer-left">
+                    <p>&copy; 2026 Event Registration Platform. All Rights Reserved.</p>
+                </div>
+
+                <div class="footer-social">
+
+                    <a href="#"><i class="fa-solid fa-envelope"></i></a>
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fa-brands fa-github"></i></a>
+
+                </div>
+
+                <div class="footer-right">
+                    <p>Developed by Mohammed Saif R</p>
+                </div>
+
+            </footer>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const menuToggle = document.getElementById("menuToggle");
+
+            if (menuToggle) {
+                menuToggle.addEventListener("click", function () {
+                    document.body.classList.toggle("sidebar-closed");
+                });
+            }
+
+            const eventsButton = document.getElementById("eventsDropdownButton");
+            const eventsMenu = document.getElementById("eventsDropdownMenu");
+            const eventsArrow = document.getElementById("eventsDropdownArrow");
+
+            if (eventsButton) {
+                eventsButton.addEventListener("click", function () {
+                    eventsMenu.classList.toggle("submenu-visible");
+                    eventsArrow.classList.toggle("arrow-rotated");
+                });
+            }
+
+        });
+
+    </script>
+{% load static %}
+
+<script src="{% static 'js/theme.js' %}"></script>
+</body>
+
+</html>

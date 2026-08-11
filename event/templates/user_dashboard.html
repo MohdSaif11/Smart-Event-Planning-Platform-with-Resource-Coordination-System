@@ -1,0 +1,163 @@
+{% extends "user_base.html" %}
+
+{% block title %}
+User Dashboard
+{% endblock %}
+
+{% block content %}
+
+<h1>Welcome to Event Registration Platform</h1>
+
+<div class="dashboard-cards">
+
+    <div class="dashboard-card purple">
+
+        <i class="fa-solid fa-calendar-days card-icon"></i>
+
+        <h2>{{ total_events }}</h2>
+
+        <p>Total Events</p>
+
+        <a href="{% url 'user_event_list' %}">
+            View Details
+        </a>
+
+    </div>
+
+    <div class="dashboard-card teal">
+
+        <i class="fa-solid fa-clipboard-check card-icon"></i>
+
+        <h2>{{ registered_events }}</h2>
+
+        <p>Registered Events</p>
+
+        <a href="{% url 'my_registrations' %}">
+            View Details
+        </a>
+
+    </div>
+
+    <div class="dashboard-card blue">
+
+        <i class="fa-solid fa-clock card-icon"></i>
+
+        <h2>{{ upcoming_events }}</h2>
+
+        <p>Upcoming Events</p>
+
+        <a href="{% url 'user_event_list' %}">
+            View Details
+        </a>
+
+    </div>
+
+    <div class="dashboard-card green">
+
+        <i class="fa-solid fa-circle-play card-icon"></i>
+
+        <h2>{{ active_events }}</h2>
+
+        <p>Active Events</p>
+
+        <a href="{% url 'user_event_list' %}">
+            View Details
+        </a>
+
+    </div>
+
+    <div class="dashboard-card pink">
+
+        <i class="fa-solid fa-circle-check card-icon"></i>
+
+        <h2>{{ completed_events }}</h2>
+
+        <p>Completed Events</p>
+
+        <a href="{% url 'completed_events' %}">
+            View Details
+        </a>
+
+    </div>
+
+    <div class="dashboard-card orange">
+
+        <i class="fa-solid fa-heart card-icon"></i>
+
+        <h2>{{ wishlist }}</h2>
+
+        <p>Wishlist</p>
+
+        <a href="{% url 'wishlist' %}">
+            View Details
+        </a>
+
+    </div>
+
+</div>
+
+<div class="user-card">
+
+    <h2>Latest Events</h2>
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Event</th>
+
+                <th>Category</th>
+
+                <th>Venue</th>
+
+                <th>Action</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for event in events %}
+
+            <tr>
+
+                <td>{{ event.event_name }}</td>
+
+                <td>{{ event.category }}</td>
+
+                <td>{{ event.venue }}</td>
+
+                <td>
+
+                    <a href="{% url 'event_details' event.id %}" class="btn">
+                        View
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+
+                <td colspan="4">
+
+                    No Events Available
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

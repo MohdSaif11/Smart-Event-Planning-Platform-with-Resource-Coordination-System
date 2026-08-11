@@ -1,0 +1,584 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Admin Panel{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/admin_panel.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <div class="container">
+
+        <aside class="sidebar">
+
+            <div class="sidebar-header">
+                <h2>Admin Panel</h2>
+            </div>
+
+            <nav class="sidebar-menu">
+
+                <ul class="main-menu">
+
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa-solid fa-gauge"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-dropdown">
+
+                        <button type="button" class="sidebar-dropdown-button" id="categoryDropdownButton">
+
+                            <span class="dropdown-title">
+                                <i class="fa-solid fa-folder"></i>
+                                <span>Event Category</span>
+                            </span>
+
+                            <i class="fa-solid fa-chevron-right dropdown-chevron" id="categoryDropdownArrow"></i>
+
+                        </button>
+
+                        <ul class="sidebar-submenu" id="categoryDropdownMenu">
+
+                            <li>
+                                <a href="{% url 'create_category' %}">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    <span>Create Category</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{% url 'category_list' %}">
+                                    <i class="fa-solid fa-list"></i>
+                                    <span>Category List</span>
+                                </a>
+                            </li>
+
+                        </ul>
+
+                    </li>
+
+                    <li class="sidebar-dropdown">
+
+                        <button type="button" class="sidebar-dropdown-button" id="eventsDropdownButton">
+
+                            <span class="dropdown-title">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                <span>Events</span>
+                            </span>
+
+                            <i class="fa-solid fa-chevron-right dropdown-chevron" id="eventsDropdownArrow"></i>
+
+                        </button>
+
+                        <ul class="sidebar-submenu" id="eventsDropdownMenu">
+
+                            <li>
+                                <a href="{% url 'create_event' %}">
+                                    <i class="fa-solid fa-square-plus"></i>
+                                    <span>Create Event</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{% url 'event_list' %}">
+                                    <i class="fa-solid fa-table-list"></i>
+                                    <span>Event List</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{% url 'add_event_member' %}">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                    <span>Add Event Member</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{% url 'join_event_list' %}">
+                                    <i class="fa-solid fa-users"></i>
+                                    <span>Join Event List</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{% url 'event_wish_list' %}">
+                                    <i class="fa-solid fa-heart"></i>
+                                    <span>Event Wish List</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{% url 'add_event_wish_user' %}">
+                                    <i class="fa-solid fa-user-gear"></i>
+                                    <span>Add Event Wish User</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{% url 'complete_event_list' %}">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    <span>Complete Event List</span>
+                                </a>
+                            </li>
+
+                            <li>
+    <a href="{% url 'scan_qr' %}">
+        <i class="fa-solid fa-qrcode"></i>
+        <span>Scan QR</span>
+    </a>
+</li>
+
+
+                        </ul>
+
+                    </li>
+
+                </ul>
+
+            </nav>
+
+        </aside>
+
+
+        <div class="main-content">
+
+            <header class="navbar">
+
+                <div class="nav-left">
+
+                    <button class="menu-toggle" id="menuToggle" type="button">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+
+                    <a href="{% url 'home' %}">Home</a>
+
+                    <a href="#">Contact</a>
+
+                </div>
+
+                <div class="nav-right">
+
+                    <div class="theme-btn" id="themeBtn">
+    <i class="fas fa-palette"></i>
+</div>
+
+                    <button type="button" class="notification-btn" id="notificationBtn">
+                        <i class="fa-solid fa-bell"></i>
+
+                        {% if unread_count > 0 %}
+                        <span class="notification-badge">
+                            {{ unread_count }}
+                        </span>
+                        {% endif %}
+                    </button>
+
+                    <div class="profile-dropdown">
+
+                        <button class="profile-btn" id="profileBtn">
+
+                            {% if request.user.userprofile.profile_image %}
+                            <img src="{{ request.user.userprofile.profile_image.url }}" class="nav-profile-img">
+                            {% else %}
+                            <div class="nav-profile-avatar">
+                                {{ request.user.first_name|first|upper }}
+                            </div>
+                            {% endif %}
+
+                            <span>{{ request.user.first_name }}</span>
+
+                            <i class="fa-solid fa-chevron-down"></i>
+
+                        </button>
+
+                        <div class="dropdown-menu" id="profileMenu">
+
+                            <a href="{% url 'profile' %}">
+                                <i class="fa-solid fa-user"></i>
+                                Profile
+                            </a>
+
+                            <a href="{% url 'settings' %}">
+                                <i class="fa-solid fa-gear"></i>
+                                Settings
+                            </a>
+                            <button id="themeToggle" class="dropdown-btn">
+
+                                <i class="fa-solid fa-moon"></i>
+
+                                <span id="themeText">Dark Mode</span>
+
+                            </button>
+
+                            <a href="{% url 'logout' %}">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                Logout
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+            <div class="notification-panel" id="notificationPanel">
+
+                <div class="notification-header">
+
+                    <h3>Notifications</h3>
+
+                </div>
+
+                {% for notification in notifications %}
+
+                <div class="notification-item">
+
+                    <strong>{{ notification.title }}</strong>
+
+                    <p>{{ notification.message }}</p>
+
+                    <small>{{ notification.created_at|timesince }} ago</small>
+
+                </div>
+
+                {% empty %}
+
+                <div class="notification-item">
+
+                    No Notifications Available
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <main class="content-body">
+
+                {% block content %}
+                {% endblock %}
+
+            </main>
+            <footer class="admin-footer">
+
+                <div class="footer-left">
+                    <p>&copy; 2026 Event Registration Platform. All Rights Reserved.</p>
+                </div>
+
+                <div class="footer-social">
+
+                    <a href="mailto:saifzaara11@gmail.com" title="Email">
+                        <i class="fa-solid fa-envelope"></i>
+                    </a>
+
+                    <a href="https://facebook.com/Saif Mohd" target="_blank" title="Facebook">
+
+                        <i class="fa-brands fa-facebook-f"></i>
+
+                    </a>
+
+                    <a href="https://instagram.com/spyder_09_" target="_blank" title="Instagram">
+
+                        <i class="fa-brands fa-instagram"></i>
+
+                    </a>
+
+                    <a href="https://linkedin.com/in/mohammed-saif-r-5b5321327/" target="_blank" title="LinkedIn">
+
+                        <i class="fa-brands fa-linkedin-in"></i>
+
+                    </a>
+                    <a href="https://github.com/MohdSaif11" target="_blank" title="GitHub">
+
+                        <i class="fa-brands fa-github"></i>
+
+                    </a>
+
+                </div>
+
+                <div class="footer-right">
+                    <p>
+Developed by
+<a href="#" id="developerBtn">
+Mohammed Saif R
+</a>
+</p>
+                </div>
+
+            </footer>
+
+        </div>
+
+    </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const menuToggle = document.getElementById("menuToggle");
+
+            if (menuToggle) {
+                menuToggle.addEventListener("click", function () {
+                    document.body.classList.toggle("sidebar-closed");
+                });
+            }
+
+            const categoryButton = document.getElementById("categoryDropdownButton");
+            const categoryMenu = document.getElementById("categoryDropdownMenu");
+            const categoryArrow = document.getElementById("categoryDropdownArrow");
+
+            if (categoryButton) {
+                categoryButton.addEventListener("click", function () {
+                    categoryMenu.classList.toggle("submenu-visible");
+                    categoryArrow.classList.toggle("arrow-rotated");
+                });
+            }
+
+            const eventsButton = document.getElementById("eventsDropdownButton");
+            const eventsMenu = document.getElementById("eventsDropdownMenu");
+            const eventsArrow = document.getElementById("eventsDropdownArrow");
+
+            if (eventsButton) {
+                eventsButton.addEventListener("click", function () {
+                    eventsMenu.classList.toggle("submenu-visible");
+                    eventsArrow.classList.toggle("arrow-rotated");
+                });
+            }
+
+        });
+
+        const profileBtn = document.getElementById("profileBtn");
+        const profileMenu = document.getElementById("profileMenu");
+
+        if (profileBtn) {
+
+            profileBtn.addEventListener("click", function (e) {
+
+                e.stopPropagation();
+
+                profileMenu.classList.toggle("show");
+
+            });
+
+            document.addEventListener("click", function () {
+
+                profileMenu.classList.remove("show");
+
+            });
+
+        }
+        const notificationBtn = document.getElementById("notificationBtn");
+        const notificationPanel = document.getElementById("notificationPanel");
+
+        if (notificationBtn) {
+
+            notificationBtn.addEventListener("click", function (e) {
+
+                e.stopPropagation();
+
+                notificationPanel.classList.toggle("show");
+
+                profileMenu.classList.remove("show");
+
+                if (notificationPanel.classList.contains("show")) {
+
+                    fetch("{% url 'mark_notifications_read' %}", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": "{{ csrf_token }}"
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+
+                            if (data.status === "success") {
+
+                                const badge = document.querySelector(".notification-badge");
+
+                                if (badge) {
+                                    badge.remove();
+                                }
+
+                            }
+
+                        });
+
+                }
+
+            });
+
+        }
+
+        document.addEventListener("click", function (e) {
+
+            if (!notificationPanel.contains(e.target) &&
+                !notificationBtn.contains(e.target)) {
+
+                notificationPanel.classList.remove("show");
+
+            }
+
+        });
+
+        const themeToggle = document.getElementById("themeToggle");
+        const themeText = document.getElementById("themeText");
+
+        if (localStorage.getItem("theme") === "dark") {
+
+            document.body.classList.add("dark-theme");
+
+            themeText.innerText = "Light Mode";
+
+        }
+
+        themeToggle.addEventListener("click", function () {
+
+            document.body.classList.toggle("dark-theme");
+
+            if (document.body.classList.contains("dark-theme")) {
+
+                localStorage.setItem("theme", "dark");
+
+                themeText.innerText = "Light Mode";
+
+            }
+
+            else {
+
+                localStorage.setItem("theme", "light");
+
+                themeText.innerText = "Dark Mode";
+
+            }
+
+        });
+    </script>
+<div class="theme-panel" id="themePanel">
+
+    <h2>Theme Settings</h2>
+
+    <hr>
+
+    <label>Font Family</label>
+
+    <select id="fontFamily">
+
+        <option value="Poppins">Poppins</option>
+
+        <option value="Arial">Arial</option>
+
+        <option value="Roboto">Roboto</option>
+
+        <option value="Georgia">Georgia</option>
+
+    </select>
+
+    <label>Primary Color</label>
+
+    <div class="color-options">
+
+        <span class="color blue" data-color="#2563eb"></span>
+
+        <span class="color green" data-color="#10b981"></span>
+
+        <span class="color red" data-color="#ef4444"></span>
+
+        <span class="color purple" data-color="#8b5cf6"></span>
+
+        <span class="color orange" data-color="#f97316"></span>
+
+    </div>
+
+    <label>Sidebar Color</label>
+
+    <div class="sidebar-options">
+
+        <span class="sidebar-color black" data-sidebar="#000"></span>
+
+        <span class="sidebar-color navy" data-sidebar="#1e3a8a"></span>
+
+        <span class="sidebar-color gray" data-sidebar="#374151"></span>
+
+    </div>
+
+    <label>Font Size</label>
+
+    <input type="range"
+           id="fontSize"
+           min="14"
+           max="22"
+           value="16">
+
+    <button id="resetTheme">
+        Reset Theme
+    </button>
+
+</div>
+
+
+{% load static %}
+
+<script src="{% static 'js/theme.js' %}"></script>
+
+<div id="developerModal" class="developer-modal">
+
+<div class="developer-box">
+
+<span class="close-developer">&times;</span>
+
+
+<h2>Mohammed Saif R</h2>
+
+<h4>Full Stack Developer</h4>
+
+<p>
+Passionate Full Stack Java Developer with expertise in Java,
+Spring Boot, Django, SQL, HTML, CSS and JavaScript.
+Experienced in developing scalable web applications,
+REST APIs and database-driven systems.
+</p>
+
+<div class="developer-details">
+
+<p><strong>College :</strong> T John Institute of Technology</p>
+
+<p><strong>Degree :</strong> B.E. Computer Science</p>
+
+<p><strong>CGPA :</strong> 8.90+</p>
+
+<p><strong>Location :</strong> Bangalore</p>
+
+<p><strong>Email :</strong> mohammedsaif@example.com</p>
+
+</div>
+
+<div class="developer-social">
+
+<a href="https://github.com/MohdSaif11" target="_blank"><i class="fab fa-github"></i></a>
+
+<a href="https://linkedin.com/in/mohammed-saif-r-5b5321327/" ><i class="fab fa-linkedin"></i></a>
+
+<a href="mailto:saifzaara11@gmail.com"><i class="fas fa-envelope"></i></a>
+
+</div>
+
+</div>
+
+</div>
+
+
+</body>
+
+</html>

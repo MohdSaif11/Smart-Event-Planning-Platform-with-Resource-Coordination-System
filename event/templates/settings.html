@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <h1>Settings</h1>
+
+    <div class="breadcrumbs">
+        <a href="{% url 'home' %}">Home</a> /
+        <span>Settings</span>
+    </div>
+</div>
+
+<div class="settings-container">
+
+    <a href="{% url 'edit_profile' %}" class="settings-card">
+        <i class="fa-solid fa-user"></i>
+        <div>
+            <h3>Edit Profile</h3>
+            <p>View and update your profile information.</p>
+        </div>
+    </a>
+
+    <a href="{% url 'change_password' %}" class="settings-card">
+        <i class="fa-solid fa-key"></i>
+        <div>
+            <h3>Change Password</h3>
+            <p>Update your account password securely.</p>
+        </div>
+    </a>
+
+    <a href="{% url 'logout' %}" class="settings-card">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <div>
+            <h3>Logout</h3>
+            <p>Sign out from your account.</p>
+        </div>
+    </a>
+
+</div>
+
+{% endblock %}

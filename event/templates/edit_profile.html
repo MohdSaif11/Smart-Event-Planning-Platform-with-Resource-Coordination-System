@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <h1>Edit Profile</h1>
+
+    <div class="breadcrumbs">
+        <a href="{% url 'home' %}">Home</a> /
+        <span>Edit Profile</span>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<form method="POST" enctype="multipart/form-data">
+
+    {% csrf_token %}
+
+    <div class="edit-profile-card">
+
+        <div class="profile-left">
+
+            <label for="profile_image" class="profile-upload">
+
+                {% if profile.profile_image %}
+                    <img src="{{ profile.profile_image.url }}"
+                         class="profile-picture"
+                         id="preview">
+                {% else %}
+                    <div class="profile-avatar" id="preview">
+                        {{ request.user.first_name|first|upper }}
+                    </div>
+                {% endif %}
+
+                <div class="camera-icon">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+
+            </label>
+
+            <input
+                type="file"
+                id="profile_image"
+                name="profile_image"
+                accept="image/*"
+                hidden>
+
+            <h2>{{ request.user.first_name }}</h2>
+
+            <p class="role-badge">
+                Administrator
+            </p>
+
+        </div>
+
+        <div class="profile-right">
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>
+                        <i class="fa-solid fa-user"></i>
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        name="name"
+                        value="{{ request.user.first_name }}"
+                        required
+                        minlength="3"
+                        pattern="[A-Za-z ]+">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        <i class="fa-solid fa-envelope"></i>
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        value="{{ request.user.email }}"
+                        readonly>
+
+                </div>
+
+            </div>
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>
+                        <i class="fa-solid fa-phone"></i>
+                        Phone Number
+                    </label>
+
+                    <input
+                        type="text"
+                        name="phone"
+                        value="{{ profile.phone }}"
+                        maxlength="10"
+                        minlength="10"
+                        pattern="[0-9]{10}"
+                        required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        <i class="fa-solid fa-building-columns"></i>
+                        College
+                    </label>
+
+                    <input
+                        type="text"
+                        name="college"
+                        value="{{ profile.college }}"
+                        required>
+
+                </div>
+
+            </div>
+
+            <div class="button-area">
+
+                <button class="save-button" type="submit">
+
+                    <i class="fa-solid fa-floppy-disk"></i>
+
+                    Save Changes
+
+                </button>
+
+                <a href="{% url 'profile' %}" class="cancel-button">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                    Cancel
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</form>
+
+<script>
+
+const imageInput=document.getElementById("profile_image");
+
+imageInput.addEventListener("change",function(){
+
+    const file=this.files[0];
+
+    if(file){
+
+        const reader=new FileReader();
+
+        reader.onload=function(e){
+
+            const preview=document.getElementById("preview");
+
+            if(preview.tagName==="IMG"){
+
+                preview.src=e.target.result;
+
+            }
+            else{
+
+                const img=document.createElement("img");
+
+                img.src=e.target.result;
+
+                img.className="profile-picture";
+
+                img.id="preview";
+
+                preview.parentNode.replaceChild(img,preview);
+
+            }
+
+        };
+
+        reader.readAsDataURL(file);
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Event{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/Create_event.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <h1>Create Event</h1>
+
+    <div class="breadcrumbs">
+        <a href="{% url 'admin_panel' %}">Home</a>
+        /
+        <span>Create Event</span>
+    </div>
+</div>
+
+<div class="form-page-container">
+
+    <div class="form-card">
+
+        <h2>Create Event</h2>
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>
+                    <i class="fa-solid fa-calendar-days"></i>
+                    Event Name
+                </label>
+
+                <input type="text"
+                       name="event_name"
+                       placeholder="Enter Event Name"
+                       required>
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    <i class="fa-solid fa-layer-group"></i>
+                    Category
+                </label>
+
+                <select name="category" required>
+
+                    <option value="">Select Category</option>
+
+                    {% for category in categories %}
+
+                    <option value="{{ category.category_name }}">
+                        {{ category.category_name }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Start Date</label>
+
+                <input type="date"
+                       name="start_date"
+                       required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>End Date</label>
+
+                <input type="date"
+                       name="end_date"
+                       required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Venue</label>
+
+                <input type="text"
+                       name="venue"
+                       placeholder="Enter Venue"
+                       required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Description</label>
+
+                <textarea name="description"
+                          rows="5"
+                          placeholder="Enter Event Description"></textarea>
+
+            </div>
+
+            <button type="submit" class="submit-btn">
+                Create Event
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

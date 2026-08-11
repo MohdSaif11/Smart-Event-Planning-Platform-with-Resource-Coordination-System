@@ -1,0 +1,57 @@
+{% extends "user_base.html" %}
+
+{% block title %}Wishlist{% endblock %}
+
+{% block content %}
+
+<h1 class="page-title">My Wishlist</h1>
+
+<div class="table-container">
+
+<table class="registration-table">
+
+<thead>
+
+<tr>
+
+<th>Event</th>
+<th>Name</th>
+<th>Email</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for wish in wishes %}
+
+<tr>
+
+<td>{{ wish.event.event_name }}</td>
+<td>{{ wish.name }}</td>
+<td>{{ wish.email }}</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="3" style="text-align:center;">
+
+No Wishlist Available
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

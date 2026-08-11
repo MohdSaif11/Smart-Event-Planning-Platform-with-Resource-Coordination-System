@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Category List{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+    <h1>Category List</h1>
+
+    <div class="breadcrumbs">
+        <a href="{% url 'admin_panel' %}">Home</a>
+        /
+        <span>Category List</span>
+    </div>
+</div>
+
+<div class="content-card">
+
+    <div class="content-card-header">
+        <h2>Event Categories</h2>
+
+        <a href="{% url 'create_category' %}" class="green-btn">
+            Add Category
+        </a>
+    </div>
+
+    <div class="table-responsive">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Category Name</th>
+                    <th>Category Code</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for category in categories %}
+
+                <tr>
+                    <td>{{ category.id }}</td>
+                    <td>{{ category.category_name }}</td>
+                    <td>{{ category.category_code }}</td>
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="3" class="empty-message">
+                        No Categories Found
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

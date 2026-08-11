@@ -1,0 +1,97 @@
+{% extends "user_base.html" %}
+
+{% block title %}Event Details{% endblock %}
+
+{% block content %}
+
+<div class="details-card">
+
+    <h1>{{ event.event_name }}</h1>
+
+    {% now "Y-m-d" as today %}
+
+    {% if event.end_date|date:"Y-m-d" < today %}
+
+        <span class="status completed">
+            <i class="fa-solid fa-circle-check"></i>
+            Completed
+        </span>
+
+    {% elif event.start_date|date:"Y-m-d" > today %}
+
+        <span class="status upcoming">
+            <i class="fa-solid fa-clock"></i>
+            Upcoming
+        </span>
+
+    {% else %}
+
+        <span class="status active">
+            <i class="fa-solid fa-circle-play"></i>
+            Active
+        </span>
+
+    {% endif %}
+
+    <hr>
+
+    <div class="detail-row">
+        <strong>Category :</strong>
+        {{ event.category }}
+    </div>
+
+    <div class="detail-row">
+        <strong>Venue :</strong>
+        {{ event.venue }}
+    </div>
+
+    <div class="detail-row">
+        <strong>Start Date :</strong>
+        {{ event.start_date }}
+    </div>
+
+    <div class="detail-row">
+        <strong>End Date :</strong>
+        {{ event.end_date }}
+    </div>
+
+    <div class="detail-row">
+        <strong>Description :</strong>
+        <p>
+            {{ event.description }}
+        </p>
+    </div>
+
+    <div class="button-group">
+
+        {% if event.end_date|date:"Y-m-d" < today %}
+
+            <button class="btn-completed" disabled>
+                <i class="fa-solid fa-circle-check"></i>
+                Event Completed
+            </button>
+
+        {% else %}
+
+            <a href="{% url 'register_event' event.id %}" class="btn-register">
+                <i class="fa-solid fa-user-plus"></i>
+                Register Now
+            </a>
+
+        {% endif %}
+
+        <a href="{% url 'add_to_wishlist' event.id %}" class="btn-wishlist">
+            <i class="fa-solid fa-heart"></i>
+            Wishlist
+        </a>
+
+        <a href="{% url 'user_event_list' %}" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i>
+            Back
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

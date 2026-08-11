@@ -1,0 +1,100 @@
+{% extends "user_base.html" %}
+
+{% block title %}View Events{% endblock %}
+
+{% block content %}
+
+<h1 class="page-title">Available Events</h1>
+
+<div class="event-container">
+
+    {% for event in events %}
+
+    <div class="event-card">
+
+        <div class="event-header">
+
+            <div>
+
+                <h2>{{ event.event_name }}</h2>
+
+                <span class="category">{{ event.category }}</span>
+
+            </div>
+
+            {% now "Y-m-d" as today %}
+
+            {% if event.end_date|date:"Y-m-d" < today %} <span class="status completed">
+                Completed
+                </span>
+
+                {% elif event.start_date|date:"Y-m-d" > today %}
+
+                <span class="status upcoming">
+                    Upcoming
+                </span>
+
+                {% else %}
+
+                <span class="status active">
+                    Active
+                </span>
+
+                {% endif %}
+
+        </div>
+
+        <div class="event-body">
+
+            <p>
+                <i class="fa-solid fa-location-dot"></i>
+                {{ event.venue }}
+            </p>
+
+            <p>
+                <i class="fa-solid fa-calendar-days"></i>
+                {{ event.start_date }} - {{ event.end_date }}
+            </p>
+
+            <p>
+                {{ event.description|truncatewords:20 }}
+            </p>
+
+        </div>
+
+        <div class="event-footer">
+
+            <a href="{% url 'event_details' event.id %}" class="btn-view">
+                View Details
+            </a>
+
+            {% now "Y-m-d" as today %}
+
+            {% if event.end_date|date:"Y-m-d" < today %} <button class="btn-completed" disabled>
+                Event Completed
+                </button>
+
+                {% else %}
+
+                <a href="{% url 'register_event' event.id %}" class="btn-register">
+                    Register
+                </a>
+
+                {% endif %}
+                <a href="{% url 'add_to_wishlist' event.id %}" class="btn-wishlist">
+                    Wishlist
+                </a>
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <h3>No Events Available</h3>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

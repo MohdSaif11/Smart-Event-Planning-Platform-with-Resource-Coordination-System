@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Complete Event List{% endblock %}
+
+{% block content %}
+
+<div class="list-page">
+
+    <div class="page-heading">
+
+        <h1>Complete Event List</h1>
+
+        <div class="breadcrumb">
+            <a href="{% url 'home' %}">Home</a> / Complete Event List
+        </div>
+
+    </div>
+
+
+    <div class="content-card">
+
+        <div class="content-card-header">
+
+            <h2>
+                <i class="fa-solid fa-circle-check"></i>
+                Completed Events
+            </h2>
+
+        </div>
+
+
+        <div class="data-table-wrapper">
+
+            <table class="data-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Event Name</th>
+
+                        <th>Category</th>
+
+                        <th>Start Date</th>
+
+                        <th>End Date</th>
+
+                        <th>Venue</th>
+
+                        <th>Status</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for event in completed_events %}
+
+                    <tr>
+
+                        <td>
+                            {{ event.id }}
+                        </td>
+
+                        <td>
+                            {{ event.event_name }}
+                        </td>
+
+                        <td>
+                            {{ event.category }}
+                        </td>
+
+                        <td>
+                            {{ event.start_date|date:"F d, Y" }}
+                        </td>
+
+                        <td>
+                            {{ event.end_date|date:"F d, Y" }}
+                        </td>
+
+                        <td>
+                            {{ event.venue }}
+                        </td>
+
+                        <td>
+                            <span class="completed-status">
+                                <i class="fa-solid fa-circle-check"></i>
+                                Completed
+                            </span>
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="7" class="empty-row">
+                            No Completed Events Found
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

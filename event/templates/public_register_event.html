@@ -1,0 +1,213 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - {{ event.event_name }}</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f4f7fb;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        .public-register-container {
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .public-register-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 35px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+        }
+
+        .public-register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .public-register-header h1 {
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .public-register-header p {
+            color: #64748b;
+            margin: 5px 0;
+        }
+
+        .event-info {
+            background: #eff6ff;
+            border-left: 5px solid #2563eb;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+        }
+
+        .event-info p {
+            margin: 7px 0;
+            color: #334155;
+        }
+
+        .public-form-group {
+            margin-bottom: 20px;
+        }
+
+        .public-form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .public-form-group input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            box-sizing: border-box;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .public-form-group input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
+        }
+
+        .public-register-btn {
+            width: 100%;
+            padding: 14px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .public-register-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .message {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 7px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .message.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        @media(max-width: 700px) {
+            .public-register-container {
+                margin: 20px auto;
+            }
+
+            .public-register-card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="public-register-container">
+
+    <div class="public-register-card">
+
+        <div class="public-register-header">
+            <h1>Event Registration</h1>
+            <p>Register for the event by filling in your details.</p>
+        </div>
+
+        <div class="event-info">
+            <p><strong>Event:</strong> {{ event.event_name }}</p>
+            <p><strong>Category:</strong> {{ event.category }}</p>
+            <p><strong>Date:</strong> {{ event.start_date }} to {{ event.end_date }}</p>
+            <p><strong>Venue:</strong> {{ event.venue }}</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <div class="public-form-group">
+                <label>Full Name</label>
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Enter your full name"
+                    required
+                >
+            </div>
+
+            <div class="public-form-group">
+                <label>Email Address</label>
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                >
+            </div>
+
+            <div class="public-form-group">
+                <label>Phone Number</label>
+                <input
+                    type="tel"
+                    name="phone"
+                    placeholder="Enter 10-digit phone number"
+                    maxlength="10"
+                    required
+                >
+            </div>
+
+            <div class="public-form-group">
+                <label>College / Institution</label>
+                <input
+                    type="text"
+                    name="college"
+                    placeholder="Enter your college name"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="public-register-btn">
+                Register Now
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

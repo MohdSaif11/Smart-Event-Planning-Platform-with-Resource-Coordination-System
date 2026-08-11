@@ -1,0 +1,80 @@
+{% extends "user_base.html" %}
+{% load static %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+
+<div class="profile-container">
+
+    <h1 class="profile-title">My Profile</h1>
+
+    <div class="profile-card">
+
+        <div class="profile-header">
+
+            {% if profile.profile_image %}
+                <img src="{{ profile.profile_image.url }}" class="profile-page-image">
+            {% else %}
+                <img src="{% static 'images/profile.jpeg' %}" class="profile-page-image">
+            {% endif %}
+
+            <h2>{{ request.user.first_name }}</h2>
+
+            <p class="role">Event Participant</p>
+
+        </div>
+
+        <div class="profile-details">
+
+            <div class="detail">
+                <i class="fa-solid fa-envelope"></i>
+                <div>
+                    <h4>Email</h4>
+                    <p>{{ request.user.email }}</p>
+                </div>
+            </div>
+
+            <div class="detail">
+                <i class="fa-solid fa-phone"></i>
+                <div>
+                    <h4>Phone</h4>
+                    <p>{{ profile.phone }}</p>
+                </div>
+            </div>
+
+            <div class="detail">
+                <i class="fa-solid fa-building-columns"></i>
+                <div>
+                    <h4>College</h4>
+                    <p>{{ profile.college }}</p>
+                </div>
+            </div>
+
+            <div class="detail">
+                <i class="fa-solid fa-user"></i>
+                <div>
+                    <h4>Role</h4>
+                    <p>User</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+        <div class="profile-buttons">
+
+            <a href="{% url 'edit_user_profile' %}" class="btn-edit">
+                <i class="fa-solid fa-user-pen"></i>
+                Edit Profile
+            </a>
+
+            <a href="{% url 'user_change_password' %}" class="btn-password">
+                <i class="fa-solid fa-lock"></i>
+                Change Password
+            </a>
+
+        </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,146 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Successful</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f4f7fb;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        .success-container {
+            max-width: 650px;
+            margin: 70px auto;
+            padding: 20px;
+        }
+
+        .success-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+        }
+
+        .success-icon {
+            width: 75px;
+            height: 75px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: #16a34a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+        }
+
+        h1 {
+            color: #16a34a;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .registration-details {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 25px 0;
+            text-align: left;
+        }
+
+        .registration-details p {
+            margin: 10px 0;
+            color: #334155;
+        }
+
+        .qr-image {
+            width: 180px;
+            height: 180px;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .note {
+            background: #eff6ff;
+            color: #1e40af;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="success-container">
+
+    <div class="success-card">
+
+        <div class="success-icon">
+            ✓
+        </div>
+
+        <h1>Registration Successful!</h1>
+
+        <p>
+            You have successfully registered for
+            <strong>{{ event.event_name }}</strong>.
+        </p>
+
+        <div class="registration-details">
+
+            <p>
+                <strong>Name:</strong>
+                {{ member.name }}
+            </p>
+
+            <p>
+                <strong>Email:</strong>
+                {{ member.email }}
+            </p>
+
+            <p>
+                <strong>Phone:</strong>
+                {{ member.phone }}
+            </p>
+
+            <p>
+                <strong>College:</strong>
+                {{ member.college }}
+            </p>
+
+        </div>
+
+        {% if member.qr_code %}
+
+            <h3>Your Registration QR</h3>
+
+            <img
+                src="{{ member.qr_code.url }}"
+                class="qr-image"
+                alt="Registration QR"
+            >
+
+            <div class="note">
+                Please keep this QR code safe.
+                It can be used for event attendance.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

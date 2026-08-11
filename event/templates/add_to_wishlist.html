@@ -1,0 +1,47 @@
+{% extends "user_base.html" %}
+
+{% block title %}Add to Wishlist{% endblock %}
+
+{% block content %}
+
+<div class="register-container">
+
+<h1>Add Event to Wishlist</h1>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="form-group">
+
+<label>Event</label>
+
+<input type="text" value="{{ event.event_name }}" readonly>
+
+</div>
+
+<div class="form-group">
+
+<label>Name</label>
+
+<input type="text" name="name" required>
+
+</div>
+
+<div class="form-group">
+
+<label>Email</label>
+
+<input type="email" name="email" required>
+
+</div>
+
+<button class="register-btn">
+Add to Wishlist
+</button>
+
+</form>
+
+</div>
+
+{% endblock %}

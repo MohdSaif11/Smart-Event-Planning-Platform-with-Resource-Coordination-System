@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+Scan QR
+{% endblock %}
+
+{% block content %}
+
+<h1>QR Code Scanner</h1>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success" style="padding:12px;margin-bottom:20px;border-radius:5px;background:#d1e7dd;color:#0f5132;">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div id="reader" style="width:500px;margin:auto;"></div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<script>
+
+function onScanSuccess(decodedText){
+
+    window.location.href = "{% url 'verify_qr' 'QRDATA' %}".replace("QRDATA", encodeURIComponent(decodedText));
+
+}
+
+new Html5QrcodeScanner(
+    "reader",
+    {
+        fps:10,
+        qrbox:250
+    }
+).render(onScanSuccess);
+
+</script>
+
+{% endblock %}

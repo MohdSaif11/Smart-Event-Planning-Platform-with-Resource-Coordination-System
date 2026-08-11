@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Event{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+
+    <h1>Edit Event</h1>
+
+    <div class="breadcrumbs">
+        <a href="{% url 'admin_panel' %}">Home</a>
+        /
+        <a href="{% url 'event_list' %}">Event List</a>
+        /
+        <span>Edit</span>
+    </div>
+
+</div>
+
+<div class="form-page-container">
+
+    <div class="form-card">
+
+        <h2>Edit Event</h2>
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <div class="form-group">
+
+                <label>Event Name</label>
+
+                <input type="text"
+                       name="event_name"
+                       value="{{ event.event_name }}"
+                       required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Category</label>
+
+                <select name="category" required>
+
+                    {% for category in categories %}
+
+                    <option value="{{ category.category_name }}"
+                        {% if category.category_name == event.category %}selected{% endif %}>
+
+                        {{ category.category_name }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Start Date</label>
+
+                <input type="date"
+                       name="start_date"
+                       value="{{ event.start_date|date:'Y-m-d' }}"
+                       required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>End Date</label>
+
+                <input type="date"
+                       name="end_date"
+                       value="{{ event.end_date|date:'Y-m-d' }}"
+                       required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Venue</label>
+
+                <input type="text"
+                       name="venue"
+                       value="{{ event.venue }}"
+                       required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Description</label>
+
+                <textarea name="description"
+                          rows="5">{{ event.description }}</textarea>
+
+            </div>
+
+            <button type="submit" class="submit-btn">
+                Update Event
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ event.event_name }}</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:"Segoe UI",Arial,sans-serif;
+        }
+
+        body{
+            min-height:100vh;
+            background:#f4f7fb;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:30px;
+        }
+
+        .event-card{
+            width:100%;
+            max-width:800px;
+            background:#ffffff;
+            border-radius:20px;
+            padding:40px;
+            box-shadow:0 10px 35px rgba(0,0,0,.12);
+        }
+
+        .event-header{
+            text-align:center;
+            margin-bottom:30px;
+        }
+
+        .event-header h1{
+            color:#1e293b;
+            font-size:36px;
+            margin-bottom:12px;
+        }
+
+        .event-header p{
+            color:#64748b;
+            font-size:16px;
+        }
+
+        .event-info{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:18px;
+            margin-bottom:30px;
+        }
+
+        .info-box{
+            background:#f8fafc;
+            padding:20px;
+            border-radius:12px;
+            border:1px solid #e2e8f0;
+        }
+
+        .info-box strong{
+            display:block;
+            color:#64748b;
+            font-size:14px;
+            margin-bottom:7px;
+        }
+
+        .info-box span{
+            color:#1e293b;
+            font-size:16px;
+            font-weight:600;
+        }
+
+        .description{
+            padding:25px 0;
+            border-top:1px solid #e2e8f0;
+            border-bottom:1px solid #e2e8f0;
+        }
+
+        .description h2{
+            color:#1e293b;
+            margin-bottom:12px;
+            font-size:22px;
+        }
+
+        .description p{
+            color:#475569;
+            line-height:1.8;
+            font-size:16px;
+        }
+
+        .register-area{
+            text-align:center;
+            margin-top:30px;
+        }
+
+        .register-btn{
+            display:inline-block;
+            background:#2563eb;
+            color:#ffffff;
+            text-decoration:none;
+            padding:14px 35px;
+            border-radius:8px;
+            font-size:17px;
+            font-weight:600;
+        }
+
+        .register-btn:hover{
+            background:#1d4ed8;
+        }
+
+        .qr-note{
+            text-align:center;
+            margin-top:18px;
+            color:#94a3b8;
+            font-size:13px;
+        }
+
+        @media(max-width:600px){
+            body{
+                padding:15px;
+            }
+
+            .event-card{
+                padding:25px;
+            }
+
+            .event-header h1{
+                font-size:28px;
+            }
+
+            .event-info{
+                grid-template-columns:1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="event-card">
+
+    <div class="event-header">
+        <h1>{{ event.event_name }}</h1>
+        <p>Event Registration Platform</p>
+    </div>
+
+    <div class="event-info">
+
+        <div class="info-box">
+            <strong>Category</strong>
+            <span>{{ event.category }}</span>
+        </div>
+
+        <div class="info-box">
+            <strong>Venue</strong>
+            <span>{{ event.venue }}</span>
+        </div>
+
+        <div class="info-box">
+            <strong>Start Date</strong>
+            <span>{{ event.start_date }}</span>
+        </div>
+
+        <div class="info-box">
+            <strong>End Date</strong>
+            <span>{{ event.end_date }}</span>
+        </div>
+
+    </div>
+
+    <div class="description">
+
+        <h2>About This Event</h2>
+
+        <p>
+            {{ event.description }}
+        </p>
+
+    </div>
+
+    <div class="register-area">
+
+<a href="{% url 'public_register_event' event.id %}" class="register-btn">
+    Register Now
+</a>
+
+        <p class="qr-note">
+            Scan the QR code to view this event
+        </p>
+
+    </div>
+
+</div>
+
+</body>
+</html>
