@@ -27,7 +27,7 @@ from .serializers import EventSerializer
 from django.http import HttpResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-
+from django.db.models import Count
 from django.utils import timezone
 
 def create_user_event_notifications(user):
@@ -1306,8 +1306,11 @@ def home(request):
 def admin_panel(request):
 
     categories_count = Category.objects.count()
+
     events_count = Event.objects.count()
+
     members_count = EventMember.objects.count()
+
     wishlist_count = EventWishList.objects.count()
 
     completed_events_count = Event.objects.filter(
@@ -1316,6 +1319,15 @@ def admin_panel(request):
 
     venue_count = Event.objects.values("venue").distinct().count()
 
+    # Count unique organizers
+    organizer_count = Event.objects.exclude(
+        organizer__isnull=True
+    ).exclude(
+        organizer=""
+    ).values(
+        "organizer"
+    ).distinct().count()
+
     events = Event.objects.all().order_by("-id")[:5]
 
     # ------------------------------
@@ -1323,31 +1335,46 @@ def admin_panel(request):
     # ------------------------------
 
     event_names = []
+
     registration_counts = []
 
     all_events = Event.objects.all()
 
     for event in all_events:
+
         event_names.append(event.event_name)
+
         registration_counts.append(
-            EventMember.objects.filter(event=event).count()
+            EventMember.objects.filter(
+                event=event
+            ).count()
         )
 
     return render(request, "admin_panel.html", {
 
         "categories_count": categories_count,
+
         "events_count": events_count,
+
         "members_count": members_count,
+
         "wishlist_count": wishlist_count,
+
         "completed_events_count": completed_events_count,
+
         "venue_count": venue_count,
+
+        "organizer_count": organizer_count,
+
         "events": events,
 
         # Analytics
         "event_names": event_names,
+
         "registration_counts": registration_counts,
 
     })
+
 
 @login_required
 @user_passes_test(admin_required)
@@ -2034,4 +2061,28 @@ def verify_qr(request, data):
         )
 
     return redirect("scan_qr")
+
+@login_required
+@user_passes_test(admin_required)
+def organizer_list(request):
+
+    organizers = Event.objects.exclude(
+        organizer__isnull=True
+    ).exclude(
+        organizer=""
+    ).values(
+        "organizer"
+    ).annotate(
+        event_count=Count("id")
+    ).order_by(
+        "organizer"
+    )
+
+    return render(
+        request,
+        "organizer_list.html",
+        {
+            "organizers": organizers
+        }
+    )
 

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}
+Organizers
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>Event Organizers</h1>
+
+    <p>
+        View all organizers and the number of events they are organizing.
+    </p>
+
+</div>
+
+<div class="user-card">
+
+    <table>
+
+        <thead>
+
+            <tr>
+                <th>#</th>
+                <th>Organizer</th>
+                <th>Number of Events</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for organizer in organizers %}
+
+            <tr>
+
+                <td>
+                    {{ forloop.counter }}
+                </td>
+
+                <td>
+                    {{ organizer.organizer }}
+                </td>
+
+                <td>
+                    {{ organizer.event_count }}
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+
+                <td colspan="3">
+                    No organizers available.
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

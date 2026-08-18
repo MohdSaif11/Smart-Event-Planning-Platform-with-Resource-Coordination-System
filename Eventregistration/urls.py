@@ -145,6 +145,18 @@ path(
     name="mark_user_notifications_read"
 ),
 
+path(
+    "organizers/",
+    views.organizer_list,
+    name="organizer_list"
+),
+
+path(
+    "organizer-list/",
+    views.organizer_list,
+    name="organizer_list"
+),
+
 ]
 
 if settings.DEBUG:
