@@ -1,6 +1,7 @@
 from enum import member
 import profile
 import qrcode
+import json
 from io import BytesIO
 from django.core.files import File
 from django.shortcuts import render, redirect, get_object_or_404
@@ -12,9 +13,10 @@ from datetime import date
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
-from .models import UserProfile
+from .models import UserProfile , UserNotification
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
+from django.conf import settings
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.password_validation import validate_password
@@ -24,7 +26,939 @@ from rest_framework.response import Response
 from .serializers import EventSerializer
 from django.http import HttpResponse
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
+from django.utils import timezone
+
+def create_user_event_notifications(user):
+    """
+    Create user notifications for events that are
+    starting soon or ending soon.
+    """
+
+    today = timezone.localdate()
+
+    # ---------------------------------------------------------
+    # EVENTS STARTING TODAY OR TOMORROW
+    # ---------------------------------------------------------
+
+    starting_events = Event.objects.filter(
+        start_date__gte=today,
+        start_date__lte=today + timezone.timedelta(days=1)
+    )
+
+    for event in starting_events:
+
+        if not UserNotification.objects.filter(
+            user=user,
+            event=event,
+            notification_type="STARTING_SOON"
+        ).exists():
+
+            UserNotification.objects.create(
+                user=user,
+                event=event,
+                title="Event Starting Soon",
+                message=(
+                    f"{event.event_name} is starting "
+                    f"on {event.start_date}."
+                ),
+                notification_type="STARTING_SOON"
+            )
+
+    # ---------------------------------------------------------
+    # EVENTS ENDING TODAY OR TOMORROW
+    # ---------------------------------------------------------
+
+    ending_events = Event.objects.filter(
+        end_date__gte=today,
+        end_date__lte=today + timezone.timedelta(days=1)
+    )
+
+    for event in ending_events:
+
+        if not UserNotification.objects.filter(
+            user=user,
+            event=event,
+            notification_type="ENDING_SOON"
+        ).exists():
+
+            UserNotification.objects.create(
+                user=user,
+                event=event,
+                title="Event Ending Soon",
+                message=(
+                    f"{event.event_name} is ending "
+                    f"on {event.end_date}."
+                ),
+                notification_type="ENDING_SOON"
+            )
+
+def get_events_for_ai():
+    events = Event.objects.all()
+
+    event_data = []
+
+    for event in events:
+        event_data.append({
+            "id": event.id,
+            "name": event.event_name,
+            "category": str(event.category),
+            "organizer": event.organizer,
+            "start_date": str(event.start_date),
+            "end_date": str(event.end_date),
+            "venue": event.venue,
+            "status": get_event_status(event)
+        })
+
+    return event_data
+
+def get_event_status(event):
+    today = timezone.localdate()
+
+    if event.end_date < today:
+        return "COMPLETED"
+    elif event.start_date > today:
+        return "UPCOMING"
+    else:
+        return "ONGOING"
+    
+@require_POST
+def chatbot(request):
+    try:
+        # =========================================================
+        # GET USER MESSAGE
+        # =========================================================
+
+        data = json.loads(request.body)
+        message = data.get("message", "").strip().lower()
+
+        if not message:
+            return JsonResponse({
+                "reply": "Please enter a question."
+            })
+
+        today = timezone.localdate()
+
+        # =========================================================
+        # GET ALL EVENTS
+        # =========================================================
+
+        events = Event.objects.all()
+
+        event_data = []
+
+        for event in events:
+
+            if event.end_date < today:
+                status = "COMPLETED"
+
+            elif event.start_date > today:
+                status = "UPCOMING"
+
+            else:
+                status = "ONGOING"
+
+            event_data.append({
+                "id": event.id,
+                "name": event.event_name,
+                "category": event.category,
+                "start_date": str(event.start_date),
+                "end_date": str(event.end_date),
+                "venue": event.venue,
+                "description": event.description,
+                "status": status
+            })
+
+        # =========================================================
+        # GET LOGGED-IN USER
+        # =========================================================
+
+        user_email = request.user.email
+
+        # =========================================================
+        # GET REGISTERED EVENTS
+        # =========================================================
+
+        registrations = EventMember.objects.filter(
+            email=user_email
+        ).select_related("event")
+
+        registered_events = []
+
+        for registration in registrations:
+
+            registered_events.append({
+                "event": registration.event.event_name,
+                "start_date": str(registration.event.start_date),
+                "end_date": str(registration.event.end_date),
+                "venue": registration.event.venue,
+                "attended": registration.attended
+            })
+
+        # =========================================================
+        # GET WISHLIST EVENTS
+        # =========================================================
+
+        wishlist_items = EventWishList.objects.filter(
+            email=user_email
+        ).select_related("event")
+
+        wishlist_events = []
+
+        for item in wishlist_items:
+
+            wishlist_events.append({
+                "event": item.event.event_name,
+                "start_date": str(item.event.start_date),
+                "end_date": str(item.event.end_date),
+                "venue": item.event.venue
+            })
+
+        # =========================================================
+        # EVENT COUNTS
+        # =========================================================
+
+        total_events = len(event_data)
+
+        ongoing_events = [
+            event for event in event_data
+            if event["status"] == "ONGOING"
+        ]
+
+        upcoming_events = [
+            event for event in event_data
+            if event["status"] == "UPCOMING"
+        ]
+
+        completed_events = [
+            event for event in event_data
+            if event["status"] == "COMPLETED"
+        ]
+
+        active_events = ongoing_events + upcoming_events
+
+        # =========================================================
+        # FIND EVENT MENTIONED IN QUESTION
+        # =========================================================
+
+        matched_event = None
+
+        for event in event_data:
+
+            event_name = event["name"].lower()
+            category = event["category"].lower()
+
+            if (
+                event_name in message
+                or category in message
+            ):
+                matched_event = event
+                break
+
+        # =========================================================
+        # CHATBOT INTENT DETECTION
+        # =========================================================
+
+        # =========================================================
+        # 1. GREETING
+        # =========================================================
+
+        if message in [
+            "hi",
+            "hello",
+            "hey",
+            "hi there",
+            "hello there",
+            "good morning",
+            "good afternoon",
+            "good evening"
+        ]:
+
+            reply = (
+                "Hello! 👋 I am your Event Assistant. "
+                "I can help you with events, registration, "
+                "attendance, wishlist, dates, venues and event status."
+            )
+
+        # =========================================================
+        # 2. HELP
+        # =========================================================
+
+        elif (
+            message == "help"
+            or "help me" in message
+            or "what can you do" in message
+            or "what can you help" in message
+        ):
+
+            reply = (
+                "I can help you with:\n\n"
+                "• Finding active events\n"
+                "• Upcoming events\n"
+                "• Completed events\n"
+                "• Event dates and venues\n"
+                "• Event details\n"
+                "• How to register\n"
+                "• Your registered events\n"
+                "• Registration count\n"
+                "• Attendance\n"
+                "• Wishlist\n"
+                "• Event categories"
+            )
+
+        # =========================================================
+        # 3. MY REGISTERED EVENTS - LIST
+        # =========================================================
+
+        elif (
+            "what events am i registered for" in message
+            or "which events am i registered for" in message
+            or "what events did i register for" in message
+            or "which events did i register for" in message
+            or "what have i registered for" in message
+            or "which have i registered for" in message
+            or "my registered events" in message
+            or "my registrations" in message
+            or "show my registrations" in message
+            or "show my registered events" in message
+            or "events i registered for" in message
+            or "events i have registered for" in message
+            or "events i joined" in message
+            or "events i have joined" in message
+            or "what did i join" in message
+            or "which events did i join" in message
+        ):
+
+            if registered_events:
+
+                event_names = ", ".join(
+                    event["event"]
+                    for event in registered_events
+                )
+
+                reply = (
+                    f"You are registered for "
+                    f"{len(registered_events)} event(s): "
+                    f"{event_names}."
+                )
+
+            else:
+
+                reply = (
+                    "You are not registered for any events."
+                )
+
+        # =========================================================
+        # 4. REGISTRATION COUNT
+        # =========================================================
+
+        elif (
+            (
+                "how many" in message
+                or "how much" in message
+                or "number of" in message
+                or "count" in message
+                or "total" in message
+            )
+            and (
+                "registered" in message
+                or "registration" in message
+                or "joined" in message
+                or "enrolled" in message
+            )
+        ):
+
+            reply = (
+                f"You are registered for "
+                f"{len(registered_events)} event(s)."
+            )
+
+        # =========================================================
+        # 5. CHECK WHETHER USER REGISTERED FOR SPECIFIC EVENT
+        # =========================================================
+
+        elif (
+            matched_event
+            and (
+                "am i registered" in message
+                or "did i register" in message
+                or "have i registered" in message
+                or "did i join" in message
+                or "have i joined" in message
+                or "am i enrolled" in message
+            )
+        ):
+
+            is_registered = any(
+                registration["event"].lower()
+                == matched_event["name"].lower()
+                for registration in registered_events
+            )
+
+            if is_registered:
+
+                reply = (
+                    f"Yes. You are registered for "
+                    f"{matched_event['name']}."
+                )
+
+            else:
+
+                reply = (
+                    f"No. You are not registered for "
+                    f"{matched_event['name']}."
+                )
+
+        # =========================================================
+        # 6. HOW TO REGISTER
+        # =========================================================
+
+        elif (
+            "how do i register" in message
+            or "how can i register" in message
+            or "how to register" in message
+            or "how do i signup" in message
+            or "how can i signup" in message
+            or "how do i sign up" in message
+            or "how can i sign up" in message
+            or "how do i join" in message
+            or "how can i join" in message
+            or "how do i participate" in message
+            or "how can i participate" in message
+            or "how to participate" in message
+            or "registration process" in message
+            or "registration procedure" in message
+            or "i want to register" in message
+            or "i want to join" in message
+            or "i want to participate" in message
+            or "how can i enroll" in message
+            or "how do i enroll" in message
+        ):
+
+            if matched_event:
+
+                reply = (
+                    f"To register for {matched_event['name']}, "
+                    f"open the event and click the Register button. "
+                    f"Follow the registration process to join the event."
+                )
+
+            else:
+
+                reply = (
+                    "To register for an event, go to the Events section, "
+                    "select the event you are interested in, and click "
+                    "the Register button."
+                )
+
+        # =========================================================
+        # 7. ATTENDANCE
+        # =========================================================
+
+        elif (
+            "attendance" in message
+            or "attended" in message
+            or "did i attend" in message
+            or "have i attended" in message
+            or "which events did i attend" in message
+            or "which events have i attended" in message
+            or "events i attended" in message
+            or "my attendance" in message
+        ):
+
+            if not registered_events:
+
+                reply = (
+                    "You have not registered for any events yet."
+                )
+
+            else:
+
+                attended_events = [
+                    event for event in registered_events
+                    if event["attended"]
+                ]
+
+                not_attended_events = [
+                    event for event in registered_events
+                    if not event["attended"]
+                ]
+
+                reply = (
+                    f"You have attended "
+                    f"{len(attended_events)} event(s) "
+                    f"out of {len(registered_events)} "
+                    f"registered event(s)."
+                )
+
+                if attended_events:
+
+                    attended_names = ", ".join(
+                        event["event"]
+                        for event in attended_events
+                    )
+
+                    reply += (
+                        f" Attended: {attended_names}."
+                    )
+
+                if not_attended_events:
+
+                    not_attended_names = ", ".join(
+                        event["event"]
+                        for event in not_attended_events
+                    )
+
+                    reply += (
+                        f" Not attended: {not_attended_names}."
+                    )
+
+        # =========================================================
+        # 8. ATTENDANCE COUNT
+        # =========================================================
+
+        elif (
+            (
+                "how many" in message
+                or "number of" in message
+                or "count" in message
+            )
+            and (
+                "attended" in message
+                or "attendance" in message
+            )
+        ):
+
+            attended_count = sum(
+                1
+                for event in registered_events
+                if event["attended"]
+            )
+
+            reply = (
+                f"You have attended {attended_count} "
+                f"out of {len(registered_events)} "
+                f"registered event(s)."
+            )
+
+        # =========================================================
+        # 9. SPECIFIC EVENT ATTENDANCE
+        # =========================================================
+
+        elif (
+            matched_event
+            and (
+                "did i attend" in message
+                or "have i attended" in message
+                or "attended" in message
+            )
+        ):
+
+            registration = next(
+                (
+                    event
+                    for event in registered_events
+                    if event["event"].lower()
+                    == matched_event["name"].lower()
+                ),
+                None
+            )
+
+            if registration:
+
+                if registration["attended"]:
+
+                    reply = (
+                        f"Yes. You attended "
+                        f"{matched_event['name']}."
+                    )
+
+                else:
+
+                    reply = (
+                        f"You are registered for "
+                        f"{matched_event['name']}, "
+                        f"but attendance has not been marked yet."
+                    )
+
+            else:
+
+                reply = (
+                    f"You are not registered for "
+                    f"{matched_event['name']}."
+                )
+
+        # =========================================================
+        # 10. WISHLIST
+        # =========================================================
+
+        elif (
+            "wishlist" in message
+            or "wish list" in message
+            or "saved event" in message
+            or "saved events" in message
+            or "favorite event" in message
+            or "favourite event" in message
+            or "my favorites" in message
+            or "my favourites" in message
+        ):
+
+            if wishlist_events:
+
+                event_names = ", ".join(
+                    event["event"]
+                    for event in wishlist_events
+                )
+
+                reply = (
+                    f"You have {len(wishlist_events)} event(s) "
+                    f"in your wishlist: {event_names}."
+                )
+
+            else:
+
+                reply = (
+                    "Your wishlist is currently empty."
+                )
+
+        # =========================================================
+        # 11. WISHLIST COUNT
+        # =========================================================
+
+        elif (
+            (
+                "how many" in message
+                or "number of" in message
+                or "count" in message
+            )
+            and (
+                "wishlist" in message
+                or "wish list" in message
+                or "saved events" in message
+                or "saved event" in message
+            )
+        ):
+
+            reply = (
+                f"You have {len(wishlist_events)} event(s) "
+                f"in your wishlist."
+            )
+
+        # =========================================================
+        # 12. ACTIVE EVENTS
+        # =========================================================
+
+        elif (
+            "active" in message
+            or "still active" in message
+            or "currently available" in message
+            or "currently active" in message
+            or "available events" in message
+            or "events available" in message
+        ):
+
+            if active_events:
+
+                event_names = ", ".join(
+                    event["name"]
+                    for event in active_events
+                )
+
+                reply = (
+                    f"There are {len(active_events)} active event(s). "
+                    f"They are: {event_names}."
+                )
+
+            else:
+
+                reply = (
+                    "There are currently no active events."
+                )
+
+        # =========================================================
+        # 13. ONGOING EVENTS
+        # =========================================================
+
+        elif (
+            "ongoing" in message
+            or "happening now" in message
+            or "currently happening" in message
+            or "happening today" in message
+            or "today's events" in message
+            or "todays events" in message
+            or "events today" in message
+            or "what is happening today" in message
+        ):
+
+            if ongoing_events:
+
+                event_names = ", ".join(
+                    event["name"]
+                    for event in ongoing_events
+                )
+
+                reply = (
+                    f"There are {len(ongoing_events)} "
+                    f"ongoing event(s): {event_names}."
+                )
+
+            else:
+
+                reply = (
+                    "There are no events happening today."
+                )
+
+        # =========================================================
+        # 14. UPCOMING EVENTS
+        # =========================================================
+
+        elif (
+            "upcoming" in message
+            or "coming events" in message
+            or "future events" in message
+            or "next events" in message
+            or "events coming" in message
+            or "events that are coming" in message
+        ):
+
+            if upcoming_events:
+
+                event_names = ", ".join(
+                    event["name"]
+                    for event in upcoming_events
+                )
+
+                reply = (
+                    f"There are {len(upcoming_events)} "
+                    f"upcoming event(s): {event_names}."
+                )
+
+            else:
+
+                reply = (
+                    "There are no upcoming events."
+                )
+
+        # =========================================================
+        # 15. COMPLETED EVENTS
+        # =========================================================
+
+        elif (
+            "completed" in message
+            or "finished events" in message
+            or "past events" in message
+            or "ended events" in message
+            or "events that ended" in message
+        ):
+
+            if completed_events:
+
+                event_names = ", ".join(
+                    event["name"]
+                    for event in completed_events
+                )
+
+                reply = (
+                    f"There are {len(completed_events)} "
+                    f"completed event(s): {event_names}."
+                )
+
+            else:
+
+                reply = (
+                    "There are no completed events."
+                )
+
+        # =========================================================
+        # 16. TOTAL EVENT COUNT
+        # =========================================================
+
+        elif (
+            (
+                "how many" in message
+                or "number of" in message
+                or "count" in message
+                or "total" in message
+            )
+            and "event" in message
+        ):
+
+            reply = (
+                f"There are {total_events} events in total. "
+                f"{len(ongoing_events)} are ongoing, "
+                f"{len(upcoming_events)} are upcoming, and "
+                f"{len(completed_events)} are completed."
+            )
+
+        # =========================================================
+        # 17. EVENT DATE
+        # =========================================================
+
+        elif matched_event and (
+            "when" in message
+            or "date" in message
+            or "start date" in message
+            or "end date" in message
+            or "starts" in message
+            or "ends" in message
+            or "when does" in message
+        ):
+
+            reply = (
+                f"{matched_event['name']} starts on "
+                f"{matched_event['start_date']} and ends on "
+                f"{matched_event['end_date']}."
+            )
+
+        # =========================================================
+        # 18. EVENT VENUE
+        # =========================================================
+
+        elif matched_event and (
+            "where" in message
+            or "venue" in message
+            or "location" in message
+            or "place" in message
+        ):
+
+            reply = (
+                f"{matched_event['name']} will be held at "
+                f"{matched_event['venue']}."
+            )
+
+        # =========================================================
+        # 19. EVENT CATEGORY
+        # =========================================================
+
+        elif matched_event and (
+            "category" in message
+            or "type" in message
+        ):
+
+            reply = (
+                f"{matched_event['name']} belongs to the "
+                f"{matched_event['category']} category."
+            )
+
+        # =========================================================
+        # 20. EVENT DETAILS
+        # =========================================================
+
+        elif matched_event and (
+            "description" in message
+            or "about" in message
+            or "tell me about" in message
+            or "details" in message
+            or "information" in message
+            or "more about" in message
+        ):
+
+            reply = (
+                f"Here are the details for "
+                f"{matched_event['name']}:\n\n"
+                f"Category: {matched_event['category']}\n"
+                f"Start Date: {matched_event['start_date']}\n"
+                f"End Date: {matched_event['end_date']}\n"
+                f"Venue: {matched_event['venue']}\n"
+                f"Status: {matched_event['status']}\n"
+                f"Description: {matched_event['description']}"
+            )
+
+        # =========================================================
+        # 21. SPECIFIC EVENT STATUS
+        # =========================================================
+
+        elif matched_event and (
+            "status" in message
+            or "is it ongoing" in message
+            or "is it upcoming" in message
+            or "is it completed" in message
+            or "is it finished" in message
+        ):
+
+            reply = (
+                f"{matched_event['name']} is currently "
+                f"{matched_event['status']}."
+            )
+
+        # =========================================================
+        # 22. GENERAL EVENT SEARCH
+        # =========================================================
+
+        elif matched_event:
+
+            reply = (
+                f"{matched_event['name']} is a "
+                f"{matched_event['category']} event.\n\n"
+                f"Start Date: {matched_event['start_date']}\n"
+                f"End Date: {matched_event['end_date']}\n"
+                f"Venue: {matched_event['venue']}\n"
+                f"Status: {matched_event['status']}\n\n"
+                f"{matched_event['description']}"
+            )
+
+        # =========================================================
+        # 23. UNKNOWN QUESTION
+        # =========================================================
+
+        else:
+
+            reply = (
+                "I couldn't understand that question yet.\n\n"
+                "You can ask me things like:\n"
+                "• How many events are active?\n"
+                "• How can I register for an event?\n"
+                "• How many events have I registered?\n"
+                "• What events am I registered for?\n"
+                "• Am I registered for Basketball?\n"
+                "• Which events have I attended?\n"
+                "• What is my attendance?\n"
+                "• What is in my wishlist?\n"
+                "• Which events are upcoming?\n"
+                "• Which events are completed?\n"
+                "• Where is the Basketball event?\n"
+                "• When does the Basketball event start?\n"
+                "• Tell me about Basketball."
+            )
+
+        # =========================================================
+        # DEBUG INFORMATION
+        # =========================================================
+
+        context = {
+            "current_date": str(today),
+            "events": event_data,
+            "registered_events": registered_events,
+            "wishlist_events": wishlist_events
+        }
+
+        print("CHATBOT QUESTION:", message)
+        print("CHATBOT ANSWER:", reply)
+
+        # =========================================================
+        # RETURN RESPONSE
+        # =========================================================
+
+        return JsonResponse({
+            "reply": reply,
+            "context": context
+        })
+
+    except Exception as e:
+
+        print("CHATBOT ERROR:", str(e))
+
+        return JsonResponse(
+            {
+                "reply": (
+                    "Sorry, something went wrong "
+                    "while processing your request."
+                )
+            },
+            status=500
+        )
+    
 def admin_required(user):
     return user.is_staff
 
@@ -191,6 +1125,62 @@ def api_event_details(request, id):
 def mark_notifications_read(request):
 
     Notification.objects.filter(is_read=False).update(is_read=True)
+
+    return JsonResponse({
+        "status": "success"
+    })
+
+@login_required
+def user_notifications(request):
+
+    # Generate starting/ending reminders
+    create_user_event_notifications(request.user)
+
+    notifications = UserNotification.objects.filter(
+        user=request.user
+    ).order_by("-created_at")
+
+    notification_data = []
+
+    for notification in notifications:
+
+        notification_data.append({
+            "id": notification.id,
+            "title": notification.title,
+            "message": notification.message,
+            "type": notification.notification_type,
+            "is_read": notification.is_read,
+            "created_at": notification.created_at.strftime(
+                "%d %b %Y, %I:%M %p"
+            ),
+            "event_id": (
+                notification.event.id
+                if notification.event
+                else None
+            )
+        })
+
+    unread_count = UserNotification.objects.filter(
+        user=request.user,
+        is_read=False
+    ).count()
+
+    return JsonResponse({
+        "notifications": notification_data,
+        "unread_count": unread_count
+    })
+
+
+@login_required
+@require_POST
+def mark_user_notifications_read(request):
+
+    UserNotification.objects.filter(
+        user=request.user,
+        is_read=False
+    ).update(
+        is_read=True
+    )
 
     return JsonResponse({
         "status": "success"
@@ -387,36 +1377,73 @@ def category_list(request):
 @login_required
 @user_passes_test(admin_required)
 def create_event(request):
+
     categories = Category.objects.all()
 
     if request.method == "POST":
+
         event_name = request.POST.get("event_name")
         category = request.POST.get("category")
+        organizer = request.POST.get("organizer")
         start_date = request.POST.get("start_date")
         end_date = request.POST.get("end_date")
         venue = request.POST.get("venue")
         description = request.POST.get("description")
 
-        Event.objects.create(
+        # -----------------------------------------------------
+        # CREATE EVENT
+        # -----------------------------------------------------
+
+        event = Event.objects.create(
             event_name=event_name,
             category=category,
+            organizer=organizer,
             start_date=start_date,
             end_date=end_date,
             venue=venue,
             description=description
         )
 
+        # -----------------------------------------------------
+        # ADMIN NOTIFICATION
+        # -----------------------------------------------------
+
         Notification.objects.create(
             title="New Event Created",
             message=f"{event_name} has been created."
         )
-        
+
+        # -----------------------------------------------------
+        # USER NOTIFICATIONS
+        # -----------------------------------------------------
+
+        users = User.objects.filter(
+            is_active=True,
+            is_staff=False
+        )
+
+        for user in users:
+
+            UserNotification.objects.create(
+                user=user,
+                event=event,
+                title="New Event Available",
+                message=(
+                    f"A new event '{event_name}' "
+                    f"is now available."
+                ),
+                notification_type="NEW_EVENT"
+            )
 
         return redirect("event_list")
 
-    return render(request, "Create_Event.html", {
-        "categories": categories
-    })
+    return render(
+        request,
+        "Create_Event.html",
+        {
+            "categories": categories
+        }
+    )
 
 @login_required
 @user_passes_test(admin_required)
@@ -604,6 +1631,9 @@ from django.utils import timezone
 @login_required
 def user_dashboard(request):
 
+    # Create user-specific event reminders
+    create_user_event_notifications(request.user)
+
     today = timezone.localdate()
 
     events = Event.objects.all().order_by("-id")[:5]
@@ -646,10 +1676,13 @@ def user_dashboard(request):
         "upcoming_events": upcoming_events,
 
         "events": events
-
     }
 
-    return render(request, "user_dashboard.html", context)
+    return render(
+        request,
+        "user_dashboard.html",
+        context
+    )
 
 def user_event_list(request):
     events = Event.objects.all().order_by("-id")
@@ -728,6 +1761,17 @@ def register_event(request, id):
         message=f"{request.user.first_name} registered for {event.event_name}."
     )
 
+    UserNotification.objects.create(
+        user=request.user,
+        event=event,
+        title="Registration Successful",
+        message=(
+            f"You successfully registered for "
+            f"{event.event_name}."
+        ),
+        notification_type="REGISTRATION"
+    )
+
     messages.success(
         request,
         "Event registered successfully."
@@ -787,6 +1831,17 @@ def add_to_wishlist(request, id):
     Notification.objects.create(
         title="Wishlist Updated",
         message=f"{request.user.first_name} added {event.event_name} to wishlist."
+    )
+
+    UserNotification.objects.create(
+        user=request.user,
+        event=event,
+        title="Added to Wishlist",
+        message=(
+            f"{event.event_name} has been added "
+            f"to your wishlist."
+        ),
+        notification_type="WISHLIST"
     )
 
     return redirect("wishlist")

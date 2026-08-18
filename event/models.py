@@ -13,6 +13,9 @@ class Category(models.Model):
 class Event(models.Model):
     event_name = models.CharField(max_length=200)
     category = models.CharField(max_length=100)
+
+    organizer = models.CharField(max_length=200)
+
     start_date = models.DateField()
     end_date = models.DateField()
     venue = models.CharField(max_length=200)
@@ -20,7 +23,6 @@ class Event(models.Model):
 
     def __str__(self):
         return self.event_name
-
 
 class UserProfile(models.Model):
 
@@ -82,3 +84,36 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.title
+
+class UserNotification(models.Model):
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    title = models.CharField(max_length=200)
+
+    message = models.TextField()
+
+    notification_type = models.CharField(
+        max_length=50,
+        default="GENERAL"
+    )
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    is_read = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(
+        default=timezone.now
+    )
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"
+    

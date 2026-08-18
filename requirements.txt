@@ -12,3 +12,5 @@ pytz
 six
 sqlparse
 dnspython
+google-genai
+python-dotenv

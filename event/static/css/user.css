@@ -886,3 +886,362 @@ input[readonly]{
 
 }
 
+#chatbot-button{
+position:fixed;
+right:25px;
+bottom:25px;
+width:60px;
+height:60px;
+border-radius:50%;
+background:#2563eb;
+color:#fff;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:24px;
+cursor:pointer;
+box-shadow:0 5px 20px rgba(0,0,0,.2);
+z-index:9999;
+transition:.3s;
+}
+
+#chatbot-button:hover{
+transform:scale(1.08);
+}
+
+#chatbot-box{
+position:fixed;
+right:25px;
+bottom:95px;
+width:360px;
+height:500px;
+background:#fff;
+border-radius:15px;
+box-shadow:0 10px 35px rgba(0,0,0,.2);
+display:none;
+flex-direction:column;
+overflow:hidden;
+z-index:9999;
+}
+
+#chatbot-box.active{
+display:flex;
+}
+
+.chatbot-header{
+background:#2563eb;
+color:#fff;
+padding:18px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.chatbot-header strong{
+display:block;
+font-size:17px;
+}
+
+.chatbot-header small{
+display:block;
+margin-top:4px;
+opacity:.85;
+}
+
+#chatbot-close{
+background:none;
+border:none;
+color:#fff;
+font-size:25px;
+cursor:pointer;
+}
+
+#chatbot-messages{
+flex:1;
+padding:15px;
+overflow-y:auto;
+background:#f8fafc;
+}
+
+.bot-message,
+.user-message{
+max-width:80%;
+padding:10px 14px;
+border-radius:12px;
+margin-bottom:12px;
+font-size:14px;
+line-height:1.5;
+white-space:pre-line;
+}
+
+.bot-message{
+background:#e2e8f0;
+color:#1e293b;
+margin-right:auto;
+}
+
+.user-message{
+background:#2563eb;
+color:#fff;
+margin-left:auto;
+}
+
+.chatbot-input{
+display:flex;
+padding:12px;
+border-top:1px solid #e2e8f0;
+background:#fff;
+}
+
+#chatbot-input{
+flex:1;
+border:1px solid #cbd5e1;
+border-radius:8px;
+padding:10px;
+outline:none;
+}
+
+#chatbot-send{
+width:45px;
+margin-left:8px;
+border:none;
+border-radius:8px;
+background:#2563eb;
+color:#fff;
+cursor:pointer;
+}
+
+#chatbot-send:hover{
+background:#1d4ed8;
+}
+
+@media(max-width:500px){
+
+#chatbot-box{
+right:10px;
+left:10px;
+width:auto;
+bottom:85px;
+}
+
+#chatbot-button{
+right:15px;
+bottom:15px;
+}
+
+}
+
+/* =========================================================
+   USER NOTIFICATION
+   ========================================================= */
+
+.user-notification-container {
+    position: relative;
+    margin-left: auto;
+}
+
+
+/* Bell button */
+
+.user-notification-button {
+    position: relative;
+
+    width: 45px;
+    height: 45px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: transparent;
+    color: white;
+
+    font-size: 21px;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: 0.2s;
+}
+
+
+.user-notification-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+
+/* Red notification number */
+
+.notification-badge {
+    position: absolute;
+
+    top: 1px;
+    right: 0px;
+
+    min-width: 19px;
+    height: 19px;
+
+    padding: 2px 5px;
+
+    background: #ff3b30;
+    color: white;
+
+    border-radius: 50%;
+
+    font-size: 11px;
+    font-weight: bold;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px solid #000;
+}
+
+
+/* Dropdown */
+
+.notification-dropdown {
+    display: none;
+
+    position: absolute;
+
+    top: 55px;
+    right: 0;
+
+    width: 360px;
+
+    background: white;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.25);
+
+    overflow: hidden;
+
+    z-index: 9999;
+}
+
+
+/* Show dropdown */
+
+.notification-dropdown.show {
+    display: block;
+}
+
+
+/* Header */
+
+.notification-header {
+    padding: 15px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    border-bottom: 1px solid #eeeeee;
+}
+
+
+.notification-header strong {
+    font-size: 17px;
+    color: #222;
+}
+
+
+.notification-header button {
+    border: none;
+
+    background: none;
+
+    color: #2463eb;
+
+    cursor: pointer;
+
+    font-size: 12px;
+}
+
+
+/* Notification list */
+
+.notification-list {
+    max-height: 380px;
+
+    overflow-y: auto;
+}
+
+
+/* Individual notification */
+
+.user-notification-item {
+    padding: 14px;
+
+    border-bottom: 1px solid #eeeeee;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+
+.user-notification-item:hover {
+    background: #f5f7fb;
+}
+
+
+/* Unread */
+
+.user-notification-item.unread {
+    background: #eef5ff;
+}
+
+
+/* Title */
+
+.user-notification-title {
+    font-weight: bold;
+
+    color: #222;
+
+    margin-bottom: 5px;
+}
+
+
+/* Message */
+
+.user-notification-message {
+    font-size: 13px;
+
+    color: #555;
+
+    line-height: 1.5;
+}
+
+
+/* Time */
+
+.user-notification-time {
+    margin-top: 6px;
+
+    font-size: 11px;
+
+    color: #999;
+}
+
+
+/* Empty */
+
+.no-notifications {
+    padding: 30px 15px;
+
+    text-align: center;
+
+    color: #777;
+
+    font-size: 14px;
+}

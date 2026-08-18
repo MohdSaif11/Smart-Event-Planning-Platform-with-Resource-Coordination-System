@@ -131,6 +131,20 @@ path(
     name="public_register_event"
 ),
 
+path("chatbot/", views.chatbot, name="chatbot"),
+
+path(
+    "user-notifications/",
+    views.user_notifications,
+    name="user_notifications"
+),
+
+path(
+    "mark-user-notifications-read/",
+    views.mark_user_notifications_read,
+    name="mark_user_notifications_read"
+),
+
 ]
 
 if settings.DEBUG:
